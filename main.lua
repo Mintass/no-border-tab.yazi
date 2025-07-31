@@ -28,25 +28,29 @@ return {
 
             for i, tab in ipairs(cx.tabs) do
                 local first, last = (i == 1), (i == total)
-                local active      = (i == cur)
+                local active = (i == cur)
+                local tab_name = ya.truncate((" %d %s "):format(i, tab.name), { max = max_w })
 
-                local tab_bg      = active and ACT_BG or INA_BG
-                local tab_fg      = active and safe_active_fg() or INA_FG
-                local sep_fg      = tab_bg
+                if active then
+                    local left_char = first and OUT_OPEN or IN_OPEN
+                    local right_char = last and OUT_CLOSE or IN_CLOSE
+                    local left_bg = first and "reset" or INA_BG
+                    local right_bg = last and "reset" or INA_BG
 
-                local left_char   = first and OUT_OPEN or IN_OPEN
-                local right_char  = last and OUT_CLOSE or IN_CLOSE
-
-                local left_bg     = first and "reset" or INA_BG
-                local right_bg    = last and "reset" or INA_BG
-
-                spans[#spans + 1] = ui.Span(left_char):fg(sep_fg):bg(left_bg)
-
-                spans[#spans + 1] = ui.Span(
-                    ya.truncate((" %d:%s "):format(i, tab.name), { max = max_w })
-                ):fg(tab_fg):bg(tab_bg):bold(active)
-
-                spans[#spans + 1] = ui.Span(right_char):fg(sep_fg):bg(right_bg)
+                    spans[#spans + 1] = ui.Span(left_char):fg(ACT_BG):bg(left_bg)
+                    spans[#spans + 1] = ui.Span(tab_name):fg(safe_active_fg()):bg(ACT_BG):bold(true)
+                    spans[#spans + 1] = ui.Span(right_char):fg(ACT_BG):bg(right_bg)
+                else
+                    if first then
+                        spans[#spans + 1] = ui.Span(OUT_OPEN):fg(INA_BG):bg("reset")
+                        spans[#spans + 1] = ui.Span(tab_name):fg(INA_FG):bg(INA_BG)
+                    elseif last then
+                        spans[#spans + 1] = ui.Span(tab_name):fg(INA_FG):bg(INA_BG)
+                        spans[#spans + 1] = ui.Span(OUT_CLOSE):fg(INA_BG):bg("reset")
+                    else
+                        spans[#spans + 1] = ui.Span(tab_name):fg(INA_FG):bg(INA_BG)
+                    end
+                end
             end
 
             return { ui.Line(spans):area(self._area) }
